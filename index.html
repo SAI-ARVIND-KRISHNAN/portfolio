@@ -1,20 +1,612 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>CRT Terminal</title>
-  <link rel="stylesheet" href="styles.css" />
-  
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Engineer's Gazette — Sai Arvind Krishnan</title>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* WCAG AA/AAA compliant palette */
+  --paper:      #fafaf8;   /* near-white newsprint */
+  --paper-alt:  #f0efe9;   /* very light warm grey for footer/alt rows */
+  --ink:        #111110;   /* near-black — 18:1 contrast on --paper */
+  --ink-mid:    #2e2d2a;   /* body text — 13:1 contrast */
+  --ink-soft:   #5a5850;   /* secondary text — 7:1 contrast (AA large) */
+  --rule:       #111110;
+  --accent:     #9b1c1c;   /* deep red — 5.2:1 on white, AA compliant */
+  --accent-lt:  #fdf2f2;   /* tint for stat bg */
+  --gap:        1.6rem;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: #d4d0c8;
+  color: var(--ink);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 400;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.newspaper {
+  max-width: 980px;
+  margin: 2rem auto;
+  background: var(--paper);
+  box-shadow: 0 4px 48px rgba(0,0,0,0.28);
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  padding: 1.4rem 2.5rem 1rem;
+  text-align: center;
+  border-bottom: 3px double var(--rule);
+  opacity: 0;
+  animation: up 0.6s ease forwards;
+}
+
+.mast-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.mast-title {
+  font-family: 'UnifrakturMaguntia', cursive;
+  font-size: clamp(2.8rem, 7vw, 5.4rem);
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 0.25rem;
+}
+
+.mast-hr { height: 1px; background: var(--rule); margin: 0.3rem 0; }
+
+.mast-sub {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  padding: 0.3rem 0;
+}
+
+.mast-byline {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+/* ── TICKER ── */
+.ticker {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.34rem 0;
+  overflow: hidden;
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ticker-track { display: inline-block; animation: roll 34s linear infinite; }
+.ticker-track span { margin: 0 1.8rem; }
+.tdot { color: #e87b7b; }
+
+@keyframes roll { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
+
+/* ── BODY WRAPPER ── */
+.paper-body { padding: 0 2.5rem 2.5rem; }
+
+/* ── SECTION HEADS ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  margin: 2.2rem 0 1.2rem;
+}
+.section-head::before,
+.section-head::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+.section-head h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  padding: 0 1rem;
+  white-space: nowrap;
+}
+
+
+
+/* ── HERO ── */
+.hero {
+  display: flex;
+  gap: var(--gap);
+  border-top: 3px solid var(--rule);
+  border-bottom: 2px solid var(--rule);
+  padding: 1.6rem 0;
+  opacity: 0;
+  animation: up 0.6s 0.2s ease forwards;
+}
+.hero-main { flex: 3; min-width: 0; }
+.hero-side  { flex: 2; min-width: 0; }
+
+.vr { width: 1px; background: var(--rule); flex-shrink: 0; }
+
+.kicker {
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+  font-weight: 400;
+}
+
+.hero-hed {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 0.65rem;
+}
+.hero-hed em { font-style: italic; color: var(--accent); }
+
+.hero-deck {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--ink-mid);
+  line-height: 1.7;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.45rem 0;
+  margin-bottom: 0.8rem;
+}
+
+.body-copy {
+  font-size: 0.9rem;
+  line-height: 1.85;
+  color: var(--ink-mid);
+  text-align: justify;
+  hyphens: auto;
+}
+.body-copy p + p { text-indent: 1.2em; }
+
+/* side panel */
+.cta-btn {
+  display: block;
+  width: 100%;
+  background: var(--ink);
+  color: var(--paper);
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.75rem;
+  transition: background 0.2s;
+}
+.cta-btn:hover { background: var(--accent); }
+.cta-btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+.cta-btn.ghost:hover { background: var(--ink); color: var(--paper); }
+
+.box {
+  border: 1px solid var(--rule);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+.box-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.65rem;
+  color: var(--ink-mid);
+}
+.box-line {
+  font-size: 0.8rem;
+  line-height: 2.15;
+  color: var(--ink-mid);
+}
+.box-line a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--ink-soft);
+  transition: color 0.2s, border-color 0.2s;
+}
+.box-line a:hover { color: var(--accent); border-color: var(--accent); }
+
+.pull-quote {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: var(--ink);
+  border-top: 2px solid var(--rule);
+  border-bottom: 2px solid var(--rule);
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+}
+.pull-quote cite {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-style: normal;
+  color: var(--ink-soft);
+  margin-top: 0.35rem;
+}
+
+/* ── EXPERIENCE ── */
+.two-col {
+  display: flex;
+  gap: var(--gap);
+  opacity: 0;
+  animation: up 0.6s ease forwards;
+}
+.two-col > .col { flex: 1; min-width: 0; }
+
+.exp-art {
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ccc;
+}
+.exp-art:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.exp-hed {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 0.2rem;
+}
+
+.exp-byline {
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin-bottom: 0.55rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.35rem;
+}
+.exp-byline strong { font-style: normal; font-weight: 400; color: var(--ink-mid); }
+
+.exp-copy {
+  font-size: 0.88rem;
+  line-height: 1.82;
+  color: var(--ink-mid);
+  text-align: justify;
+  hyphens: auto;
+}
+.exp-copy strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tags { margin-top: 0.65rem; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.tag {
+  font-size: 0.57rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  border: 1px solid #999;
+  padding: 0.13rem 0.42rem;
+  transition: all 0.18s;
+  cursor: default;
+}
+.tag:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ── SKILLS ── */
+.skills-grid {
+  display: flex;
+  border: 1.5px solid var(--rule);
+  opacity: 0;
+  animation: up 0.6s ease forwards;
+}
+.sk-cell {
+  flex: 1;
+  padding: 1rem;
+  border-right: 1px solid var(--rule);
+}
+.sk-cell:last-child { border-right: none; }
+.sk-cat {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.55rem;
+}
+.sk-list {
+  font-size: 0.78rem;
+  line-height: 1.95;
+  color: var(--ink-mid);
+}
+
+/* ── EDUCATION ── */
+.edu-row {
+  display: flex;
+  gap: var(--gap);
+  opacity: 0;
+  animation: up 0.6s ease forwards;
+}
+.edu-item { flex: 1; padding: 1rem 0; }
+.edu-lbl { font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.3rem; }
+.edu-deg {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.96rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+  margin-bottom: 0.22rem;
+}
+.edu-school { font-size: 0.82rem; color: var(--ink-mid); font-style: italic; margin-bottom: 0.18rem; }
+.edu-date { font-size: 0.7rem; color: var(--ink-soft); }
+
+/* ── FOOTER ── */
+.paper-footer {
+  border-top: 3px double var(--rule);
+  padding: 0.8rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--paper-alt);
+  opacity: 0;
+  animation: up 0.6s ease forwards;
+}
+.ftr-brand { font-family: 'UnifrakturMaguntia', cursive; font-size: 1.1rem; color: var(--ink-soft); }
+.ftr-mid { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); text-align: center; line-height: 1.75; }
+.ftr-links { font-size: 0.62rem; color: var(--ink-soft); text-align: right; line-height: 1.9; }
+.ftr-links a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px dotted; transition: color 0.2s; }
+.ftr-links a:hover { color: var(--accent); }
+
+/* animation delays */
+.d1 { animation-delay: 0.3s; }
+.d2 { animation-delay: 0.38s; }
+.d3 { animation-delay: 0.46s; }
+.d4 { animation-delay: 0.54s; }
+.d5 { animation-delay: 0.6s; }
+
+@keyframes up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 680px) {
+  .newspaper { margin: 0; }
+  .paper-body { padding: 0 1.2rem 1.5rem; }
+  .masthead { padding: 1rem 1.2rem 0.8rem; }
+  .mast-meta { flex-direction: column; gap: 0.2rem; text-align: center; }
+  .stats-bar { flex-wrap: wrap; }
+  .stat { flex: 1 1 45%; border-bottom: 1px solid var(--rule); }
+  .hero { flex-direction: column; }
+  .two-col { flex-direction: column; }
+  .skills-grid { flex-wrap: wrap; }
+  .sk-cell { flex: 1 1 45%; border-bottom: 1px solid var(--rule); }
+  .edu-row { flex-direction: column; }
+  .paper-footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+  .ftr-links { text-align: center; }
+  .vr { display: none; }
+}
+@media (max-width: 400px) {
+  .sk-cell { flex: 1 1 100%; }
+  .stat { flex: 1 1 100%; }
+}
+</style>
 </head>
 <body>
-  <div class="crt-scanline" id="crt-scanline"></div>
-  <div class="crt-boot" id="crt-boot"></div>
-  <div class="terminal-wrapper">
-    <div class="scaled-crt">
-      <div class="terminal" id="terminal"></div>
+<div class="newspaper">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="mast-meta">
+      <span>Software Engineer</span>
+      <span>Arizona, USA</span>
+      <span>March 2026</span>
+    </div>
+    <div class="mast-title">The Engineer's Gazette</div>
+    <div class="mast-hr"></div>
+    <div class="mast-sub">An Independent Portfolio of Software &amp; Systems</div>
+    <div class="mast-hr"></div>
+    <div class="mast-byline">Published by Sai Arvind Krishnan &nbsp;·&nbsp; Backend Systems · AI Infrastructure · Cloud Engineering</div>
+  </header>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <span class="tdot">◆</span><span>RAG latency cut 35% at SetuCS.io</span>
+      <span class="tdot">◆</span><span>Token costs down 40% via batched LLM calls</span>
+      <span class="tdot">◆</span><span>Telecom billing audit pipeline live · AT&amp;T · Verizon</span>
+      <span class="tdot">◆</span><span>M.S. Software Engineering · Arizona State University · May 2026</span>
+      <span class="tdot">◆</span><span>Java · Python · PostgreSQL · Azure · FAISS · Spring Boot</span>
+      <span class="tdot">◆</span><span>Technical Lead · ASU LX Design</span>
+      <span class="tdot">◆</span>
     </div>
   </div>
-  <script src="js/terminal.js"></script>
 
+  <div class="paper-body">
+
+
+
+    <!-- ABOUT -->
+    <div class="section-head"><h2>About the Engineer</h2></div>
+
+    <div class="hero">
+      <div class="hero-main">
+        <div class="kicker">Featured Profile · Arizona, USA</div>
+        <div class="hero-hed">
+          Backend Engineer Builds<br>
+          Production Systems<br>
+          From <em>First Principles</em>
+        </div>
+        <div class="hero-deck">
+          Specialising in transactional backends, RAG pipelines, and SQL-heavy data architecture — with measurable, production-verified results across telecom, inventory, and ML-backed platforms.
+        </div>
+        <div class="body-copy">
+          <p>Sai Arvind Krishnan is a backend-focused software engineer currently pursuing a Master of Science in Software Engineering at Arizona State University, where he serves as Technical Lead for the ASU LX Design programme.</p>
+          <p>His work spans on-premises Java inventory systems, cloud-deployed RAG platforms on Azure, and enterprise-grade telecom billing audit pipelines — each built with a consistent focus on correctness, performance, and operational observability.</p>
+          <p>Across four production systems, his changes have measurably moved the needle — P95 latency down 35%, token costs down 40%, query performance up 25%, and 40% of recurring manual effort automated away. Not targets, but shipped results.</p>
+        </div>
+      </div>
+
+      <div class="vr"></div>
+
+      <div class="hero-side">
+        <a href="SaiArvindKrishnan_Resume.pdf" download="SaiArvindKrishnan_Resume.pdf" class="cta-btn">↓ &nbsp; Download Résumé</a>
+        <a href="https://github.com/SAI-ARVIND-KRISHNAN" target="_blank" rel="noopener" class="cta-btn ghost">⌥ &nbsp; View GitHub</a>
+
+        <div class="box">
+          <div class="box-title">Correspondence</div>
+          <div class="box-line">
+            ✉&nbsp; <a href="mailto:saiarvind2020@gmail.com">saiarvind2020@gmail.com</a><br>
+            ☏&nbsp; <a href="tel:+16232729142">+1 (623) 272-9142</a><br>
+            ⌂&nbsp; Arizona, USA
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="box-title">On The Wire</div>
+          <div class="box-line">
+            ⌥&nbsp; <a href="https://github.com/SAI-ARVIND-KRISHNAN" target="_blank" rel="noopener">github.com/SAI-ARVIND-KRISHNAN</a><br>
+            ⬡&nbsp; <a href="https://www.linkedin.com/in/skris179/" target="_blank" rel="noopener">linkedin.com/in/skris179</a>
+          </div>
+        </div>
+
+        <div class="pull-quote">
+          "Proven ability to optimise latency, token usage, and query efficiency — from architecture to production debugging."
+          <cite>— Engineer's Summary</cite>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="section-head"><h2>Career Dispatches</h2></div>
+
+    <div class="two-col d1">
+      <div class="col">
+        <div class="exp-art">
+          <div class="kicker">Current · Dallas TX (Remote)</div>
+          <div class="exp-hed">SetuCS.io Sees 35% Latency Gains After RAG Overhaul</div>
+          <div class="exp-byline">By <strong>Sai Arvind Krishnan</strong> · Software Engineering Intern · Aug 2025 – Present</div>
+          <div class="exp-copy">Consolidated multiple Gemini LLM calls into single batched requests with ChromaDB vector retrieval, cutting P95 latency <strong>35%</strong> and token costs <strong>40%</strong> in Node.js/Express. Re-architected SQL schema to 3NF with composite indexes, improving multi-tenant query performance by <strong>25%</strong>. Deployed on Azure VMs with NAT Gateway; Azure Monitor reduced mean time to detection <strong>40%</strong>. Implemented JWT authentication with Casbin-based RBAC, cutting authorization defects <strong>30%</strong>.</div>
+          <div class="tags">
+            <span class="tag">Node.js</span><span class="tag">RAG</span><span class="tag">ChromaDB</span><span class="tag">Azure</span><span class="tag">JWT/RBAC</span><span class="tag">React</span><span class="tag">TypeScript</span>
+          </div>
+        </div>
+        <div class="exp-art">
+          <div class="kicker">Capstone · Tempe, AZ</div>
+          <div class="exp-hed">TEOCO Audit Pipeline Now Processes AT&amp;T &amp; Verizon Invoices</div>
+          <div class="exp-byline">By <strong>Sai Arvind Krishnan</strong> · Software Engineer · Jan 2026 – Present</div>
+          <div class="exp-copy">Built Python PDF ingestion pipelines using pdfplumber and PyMuPDF, normalising carrier billing invoices into auditable PostgreSQL schemas. Implemented cross-document validation for overcharge detection. Added a FAISS-backed RAG layer enabling semantic evidence retrieval and human-in-the-loop reprocessing via Python APIs.</div>
+          <div class="tags">
+            <span class="tag">Python</span><span class="tag">PostgreSQL</span><span class="tag">FAISS</span><span class="tag">pdfplumber</span><span class="tag">RAG</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="vr"></div>
+
+      <div class="col">
+        <div class="exp-art">
+          <div class="kicker">Industry · Chennai, India</div>
+          <div class="exp-hed">Manufacturer Ditches Spreadsheets for Java Inventory Backend</div>
+          <div class="exp-byline">By <strong>Sai Arvind Krishnan</strong> · SWE Intern · May – Dec 2023</div>
+          <div class="exp-copy">Replaced spreadsheet-based vendor and inventory tracking at Inox Tools Ltd. with a Java 17 / Spring Boot backend modelling vendors, SKUs, purchase orders, and inventory ledgers in PostgreSQL. Automated batch jobs cut manual reconciliation by <strong>40%</strong> weekly. Ledger-based transaction logic with idempotent updates eliminated double-counting during PO receipts and returns.</div>
+          <div class="tags">
+            <span class="tag">Java 17</span><span class="tag">Spring Boot</span><span class="tag">PostgreSQL</span><span class="tag">Spring Data JPA</span><span class="tag">REST</span>
+          </div>
+        </div>
+        <div class="exp-art">
+          <div class="kicker">Research · VIT, Chennai</div>
+          <div class="exp-hed">Deep Learning RNN Achieves Semantic Audio Similarity Beyond DSP</div>
+          <div class="exp-byline">By <strong>Sai Arvind Krishnan</strong> · Research Intern · Dec 2023 – May 2024</div>
+          <div class="exp-copy">Built an end-to-end Music Information Retrieval pipeline using MFCC, Chroma STFT, and beat-synchronous embeddings for kNN similarity search. Designed and trained a pairwise RNN similarity model in TensorFlow/Keras. Productionised with PyTest, pickle artifact pipelines, and a modular CLI.</div>
+          <div class="tags">
+            <span class="tag">Python</span><span class="tag">librosa</span><span class="tag">scikit-learn</span><span class="tag">TensorFlow</span><span class="tag">kNN</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="section-head"><h2>Technical Repertoire</h2></div>
+
+    <div class="skills-grid d2">
+      <div class="sk-cell">
+        <div class="sk-cat">Languages</div>
+        <div class="sk-list">Java · Python<br>TypeScript · JS<br>C++ · SQL · C#</div>
+      </div>
+      <div class="sk-cell">
+        <div class="sk-cat">AI &amp; Data</div>
+        <div class="sk-list">RAG · LLM APIs<br>FAISS · Chroma<br>Embeddings<br>PostgreSQL · MongoDB</div>
+      </div>
+      <div class="sk-cell">
+        <div class="sk-cat">Backend &amp; APIs</div>
+        <div class="sk-list">Spring Boot<br>Node.js · Express<br>ASP.NET Core<br>REST · GraphQL</div>
+      </div>
+      <div class="sk-cell">
+        <div class="sk-cat">Cloud &amp; Infra</div>
+        <div class="sk-list">AWS (EC2, S3, RDS)<br>Azure VM · Monitor<br>Docker · CI/CD<br>Git · Agile</div>
+      </div>
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="section-head"><h2>Academic Record</h2></div>
+
+    <div class="edu-row d3">
+      <div class="edu-item">
+        <div class="edu-lbl">Graduate · Arizona, USA</div>
+        <div class="edu-deg">Master of Science in Software Engineering</div>
+        <div class="edu-school">Arizona State University — Ira A. Fulton Schools of Engineering</div>
+        <div class="edu-date">Aug 2024 – May 2026 &nbsp;·&nbsp; Technical Lead, ASU LX Design</div>
+      </div>
+      <div class="vr"></div>
+      <div class="edu-item">
+        <div class="edu-lbl">Undergraduate · India</div>
+        <div class="edu-deg">B.Tech. Computer Science &amp; Engineering</div>
+        <div class="edu-school">Vellore Institute of Technology, Chennai, India</div>
+        <div class="edu-date">Aug 2020 – May 2024 &nbsp;·&nbsp; Hackathon Finalist Nominee</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="paper-footer d4">
+    <div class="ftr-brand">The Engineer's Gazette</div>
+    <div class="ftr-mid">
+      saiarvind2020@gmail.com &nbsp;·&nbsp; +1 (623) 272-9142<br>
+      Arizona, USA
+    </div>
+    <div class="ftr-links">
+      <a href="https://github.com/SAI-ARVIND-KRISHNAN" target="_blank" rel="noopener">GitHub</a><br>
+      <a href="https://www.linkedin.com/in/skris179/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </footer>
+
+</div>
 </body>
 </html>
